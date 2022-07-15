@@ -26,6 +26,7 @@ connection.connect((err) => {
   });
 });
 
+//start function prompt
 function startPrompt() {
   const startQuestions = [
     {
