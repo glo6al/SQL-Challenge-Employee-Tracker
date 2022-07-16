@@ -73,6 +73,36 @@ function startPrompt() {
         case "View all departments":
           viewAll("DEPARTMENT");
           break;
+        case "add a department":
+          addNewDepartment();
+          break;
+        case "add a role":
+          addNewRole();
+          break;
+        case "add an employee":
+          addNewEmployee();
+          break;
+        case "update role for an employee":
+          updateRole();
+          break;
+        case "view employees by manager":
+          viewEmployeeByManager();
+          break;
+        case "update employee's manager":
+          updateManager();
+          break;
+        case "delete a department":
+          deleteDepartment();
+          break;
+        case "delete a role":
+          deleteRole();
+          break;
+        case "delete an employee":
+          deleteEmployee();
+          break;
+        case "View the total utilized budget of a department":
+          viewBudget();
+          break;
         default:
           connection.end();
       }
