@@ -1,24 +1,31 @@
 require("dotenv").config();
-const mysql = require("mysql");
-const inquier = require("inquirer");
+const mysql = require("mysql2");
+const inquirer = require("inquirer");
 const cTable = require("console.table");
 const figlet = require("figlet");
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3005;
+
+//set up express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 const connection = mysql.createConnection({
-  host: "localhost",
-  port: 3003,
+  host: "127.0.0.1",
+  //   port: PORT,
   user: "root",
-  password: process.env.DB_PASSWORD,
+  password: "",
   database: "employee_DB",
 });
 
-// connect to the database
+// Connect to the DB
 connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id ${connection.threadId}\n`);
   figlet("Employee tracker", function (err, data) {
     if (err) {
-      console.log("ascii art not loaded");
+      console.log("art not loaded");
     } else {
       console.log(data);
     }
@@ -53,7 +60,7 @@ function startPrompt() {
     },
   ];
 
-  inquier
+  inquirer
     .prompt(startQuestions)
     .then((response) => {
       switch (response.action) {
@@ -66,36 +73,6 @@ function startPrompt() {
         case "View all departments":
           viewAll("DEPARTMENT");
           break;
-        case "add a department":
-          addNewDepartment();
-          break;
-        case "add a role":
-          addNewRole();
-          break;
-        case "add an employee":
-          addNewEmployee();
-          break;
-        case "update role for an employee":
-          updateRole();
-          break;
-        case "view employees by manager":
-          viewEmployeeByManager();
-          break;
-        case "update employee's manager":
-          updateManager();
-          break;
-        case "delete a department":
-          deleteDepartment();
-          break;
-        case "delete a role":
-          deleteRole();
-          break;
-        case "delete an employee":
-          deleteEmployee();
-          break;
-        case "View the total utilized budget of a department":
-          viewBudget();
-          break;
         default:
           connection.end();
       }
@@ -104,3 +81,27 @@ function startPrompt() {
       console.error(err);
     });
 }
+const viewAll = (table) => {
+  // const query = `SELECT * FROM ${table}`;
+  let query;
+  if (table === "DEPARTMENT") {
+    query = `SELECT * FROM DEPARTMENT`;
+  } else if (table === "ROLE") {
+    query = `SELECT R.id AS id, title, salary, D.name AS department
+      FROM ROLE AS R LEFT JOIN DEPARTMENT AS D
+      ON R.department_id = D.id;`;
+  } else {
+    //employee
+    query = `SELECT E.id AS id, E.first_name AS first_name, E.last_name AS last_name, 
+      R.title AS role, D.name AS department, CONCAT(M.first_name, " ", M.last_name) AS manager
+      FROM EMPLOYEE AS E LEFT JOIN ROLE AS R ON E.role_id = R.id
+      LEFT JOIN DEPARTMENT AS D ON R.department_id = D.id
+      LEFT JOIN EMPLOYEE AS M ON E.manager_id = M.id;`;
+  }
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.table(res);
+
+    startPrompt();
+  });
+};

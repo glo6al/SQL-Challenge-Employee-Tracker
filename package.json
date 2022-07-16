@@ -1,10 +1,22 @@
 {
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib",
+    "db": "db"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
   "dependencies": {
     "console.table": "^0.10.0",
-    "dotenv": "^16.0.1",
+    "dotenv": "^8.6.0",
     "express": "^4.18.1",
     "figlet": "^1.5.2",
-    "inquirer": "^9.0.1",
+    "inquirer": "^8.2.4",
     "mysql2": "^2.3.3"
   }
 }
