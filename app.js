@@ -424,3 +424,102 @@ const viewEmployeeByManager = () => {
       });
   });
 };
+const updateManager = () => {
+  //get all the employee list
+  connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
+    if (err) throw err;
+    const employeeChoice = [];
+    emplRes.forEach(({ first_name, last_name, id }) => {
+      employeeChoice.push({
+        name: first_name + " " + last_name,
+        value: id,
+      });
+    });
+
+    const managerChoice = [
+      {
+        name: "None",
+        value: 0,
+      },
+    ]; //an employee could have no manager
+    emplRes.forEach(({ first_name, last_name, id }) => {
+      managerChoice.push({
+        name: first_name + " " + last_name,
+        value: id,
+      });
+    });
+
+    let questions = [
+      {
+        type: "list",
+        name: "id",
+        choices: employeeChoice,
+        message: "who do you want to update?",
+      },
+      {
+        type: "list",
+        name: "manager_id",
+        choices: managerChoice,
+        message: "whos is the employee's new manager?",
+      },
+    ];
+
+    inquier
+      .prompt(questions)
+      .then((response) => {
+        const query = `UPDATE EMPLOYEE SET ? WHERE id = ?;`;
+        let manager_id = response.manager_id !== 0 ? response.manager_id : null;
+        connection.query(
+          query,
+          [{ manager_id: manager_id }, response.id],
+          (err, res) => {
+            if (err) throw err;
+
+            console.log("successfully updated employee's manager");
+            startPrompt();
+          }
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+};
+
+const deleteDepartment = () => {
+  const departments = [];
+  connection.query("SELECT * FROM DEPARTMENT", (err, res) => {
+    if (err) throw err;
+
+    res.forEach((dep) => {
+      let qObj = {
+        name: dep.name,
+        value: dep.id,
+      };
+      departments.push(qObj);
+    });
+
+    let questions = [
+      {
+        type: "list",
+        name: "id",
+        choices: departments,
+        message: "which department do u want to delete?",
+      },
+    ];
+
+    inquier
+      .prompt(questions)
+      .then((response) => {
+        const query = `DELETE FROM DEPARTMENT WHERE id = ?`;
+        connection.query(query, [response.id], (err, res) => {
+          if (err) throw err;
+          console.log(`${res.affectedRows} row(s) successfully deleted!`);
+          startPrompt();
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+};
