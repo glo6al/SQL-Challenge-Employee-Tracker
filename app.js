@@ -300,13 +300,7 @@ const addNewEmployee = () => {
     });
   });
 };
-connection.connect((err) => {
-  if (err) throw err;
-  console.log("Database connected");
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-});
+
 const updateRole = () => {
   //get all the employee list
   connection.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
@@ -464,7 +458,7 @@ const updateManager = () => {
       },
     ];
 
-    inquier
+    inquirer
       .prompt(questions)
       .then((response) => {
         const query = `UPDATE EMPLOYEE SET ? WHERE id = ?;`;
@@ -508,7 +502,7 @@ const deleteDepartment = () => {
       },
     ];
 
-    inquier
+    inquirer
       .prompt(questions)
       .then((response) => {
         const query = `DELETE FROM DEPARTMENT WHERE id = ?`;
@@ -523,3 +517,129 @@ const deleteDepartment = () => {
       });
   });
 };
+
+const deleteRole = () => {
+  const departments = [];
+  connection.query("SELECT * FROM ROLE", (err, res) => {
+    if (err) throw err;
+
+    const roleChoice = [];
+    res.forEach(({ title, id }) => {
+      roleChoice.push({
+        name: title,
+        value: id,
+      });
+    });
+
+    let questions = [
+      {
+        type: "list",
+        name: "id",
+        choices: roleChoice,
+        message: "which role do u want to delete?",
+      },
+    ];
+
+    inquirer
+      .prompt(questions)
+      .then((response) => {
+        const query = `DELETE FROM ROLE WHERE id = ?`;
+        connection.query(query, [response.id], (err, res) => {
+          if (err) throw err;
+          console.log(`${res.affectedRows} row(s) successfully deleted!`);
+          startPrompt();
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+};
+
+const deleteEmployee = () => {
+  connection.query("SELECT * FROM EMPLOYEE", (err, res) => {
+    if (err) throw err;
+
+    const employeeChoice = [];
+    res.forEach(({ first_name, last_name, id }) => {
+      employeeChoice.push({
+        name: first_name + " " + last_name,
+        value: id,
+      });
+    });
+
+    let questions = [
+      {
+        type: "list",
+        name: "id",
+        choices: employeeChoice,
+        message: "which employee do u want to delete?",
+      },
+    ];
+
+    inquirer
+      .prompt(questions)
+      .then((response) => {
+        const query = `DELETE FROM EMPLOYEE WHERE id = ?`;
+        connection.query(query, [response.id], (err, res) => {
+          if (err) throw err;
+          console.log(`${res.affectedRows} row(s) successfully deleted!`);
+          startPrompt();
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+};
+
+const viewBudget = () => {
+  connection.query("SELECT * FROM DEPARTMENT", (err, res) => {
+    if (err) throw err;
+
+    const depChoice = [];
+    res.forEach(({ name, id }) => {
+      depChoice.push({
+        name: name,
+        value: id,
+      });
+    });
+
+    let questions = [
+      {
+        type: "list",
+        name: "id",
+        choices: depChoice,
+        message: "which department's budget do you want to see?",
+      },
+    ];
+
+    inquirer
+      .prompt(questions)
+      .then((response) => {
+        const query = `SELECT D.name, SUM(salary) AS budget FROM
+      EMPLOYEE AS E LEFT JOIN ROLE AS R
+      ON E.role_id = R.id
+      LEFT JOIN DEPARTMENT AS D
+      ON R.department_id = D.id
+      WHERE D.id = ?
+      `;
+        connection.query(query, [response.id], (err, res) => {
+          if (err) throw err;
+          console.table(res);
+          startPrompt();
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+};
+
+connection.connect((err) => {
+  if (err) throw err;
+  console.log("Database connected");
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+});
